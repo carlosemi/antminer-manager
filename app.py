@@ -1,14 +1,50 @@
 import requests
 from requests.auth import HTTPDigestAuth
+import sqlite3
+
+#
+#       Database Connection Class
+#
+
+class db:
+    
+    #Constructor calls the database to extract the miners table
+
+    def __init__(self):
+        connection = sqlite3.connect('miners.db')
+        cursor = connection.cursor()
+
+        cursor.execute('''CREATE TABLE IF NOT EXISTS Miners
+                        (IP TEXT, Username TEXT, Password TEXT)''')
+
+        cursor.execute('Select * From Miners')
+
+        self.miners = cursor.fetchall()
+
+        print(self.miners)
+
+        connection.commit()
+        connection.close()
+
+    def add_miner(ip, username, password):
+        connection = sqlite3.connect('miners.db')
+        cursor = connection.cursor()
+
+        cursor.execute('''INSERT INTO Miners (IP, Username, Password)
+                            VALUES({ip},{username}, {password} )''')
+        
+        connection.commit()
+        connection.close()
+
+#
+#       Miner Connection Class
+#
 
 class minerRequest:
-    def __init__(self, password, url):
+    def __init__(self, password, ip):
         self.account = "root"
         self.password = password
-        self.digest_realm = "antMiner Configuration"
-        self.qop = "auth"
-        self.nonce_count = "0000004e"
-        self.url = "http://" + url
+        self.url = "http://" + ip
 
     def get_miner_status(self):
         
@@ -17,50 +53,49 @@ class minerRequest:
         return response
 
 
-miner1 = minerRequest("tane", "192.168.1.205")
-response = miner1.get_miner_status()
-data = response.json()
+db_connect = db()
+miners = db_connect.miners
 
-freq_arr = data['devs'][0]['freq'].split(',')
-map = {}
+for x in miners:
+    print(x)
 
-freq_arr2 = data['devs'][1]['freq'].split(',')
-map2 = {}
+    miner = minerRequest(x[2], x[0])
+    response = miner.get_miner_status()
+    data = response.json()
 
-for x in freq_arr:
-    temp = x.split('=')
-    
-    try:
-        map[temp[0]] = temp[1]
-    except IndexError:
-        map[temp[0]] = False
+    freq_arr = data['devs'][0]['freq'].split(',')
+    map = {}
 
 
-for x in freq_arr2:
-    temp = x.split('=')
-    
-    try:
-        map2[temp[0]] = temp[1]
-    except IndexError:
-        map2[temp[0]] = False
-# print(map)
+    for x in freq_arr:
+        temp = x.split('=')
+        
+        try:
+            map[temp[0]] = temp[1]
 
-print("=====================================")
-print("              SUMMARY")
-print("GH/S(RT): ", data['summary']['ghs5s'])
-print("GH/S(avg): ", data['summary']['ghsav'])
-print("\n             ANTMINER")
-print("ASIC Board 1")
-print("GH/S(RT): ", map['chain_rate6'])
-print("Temp(Chip1: ", )
-print("Temp(Chip2): ", map['temp2_6'])
-print("ASIC Status: ", data['devs'][0]['chain_acs'])
-print("\nASIC Board 2")
-print("GH/S(RT): ", map2['chain_rate6'])
-print("Temp(Chip1: ", )
-print("Temp(Chip2): ", freq_arr[16])
-print("\nsASIC Board 3")
-print("GH/S(RT): ", )
-print("Temp(Chip1: ", )
-print("Temp(Chip2): ", freq_arr[16])
-print("======================================")
+        except IndexError:
+            map[temp[0]] = False
+
+
+    print("======================================================================================")
+    print("              SUMMARY")
+    print("GH/S(RT): ", data['summary']['ghs5s'])
+    print("GH/S(avg): ", data['summary']['ghsav'])
+    print("Fan 1: ", map['fan3'], " | Fan 2: ", map['fan6'])
+    print("\n             ANTMINER")
+    print("ASIC Board 1")
+    print("GH/S(RT): ", map['chain_rate6'])
+    print("Temp(Chip1): ", map['temp6'])
+    print("Temp(Chip2): ", map['temp2_6'])
+    print("ASIC Status: ", map['chain_acs6'])
+    print("\nASIC Board 2")
+    print("GH/S(RT): ", map['chain_rate7'])
+    print("Temp(Chip1): ", map['temp7'])
+    print("Temp(Chip2): ", map['temp2_7'])
+    print("ASIC Status: ", map['chain_acs7'])
+    print("\nASIC Board 3")
+    print("GH/S(RT): ",  map['chain_rate8'])
+    print("Temp(Chip1): ", map['temp7'])
+    print("Temp(Chip2): ", map['temp2_8'])
+    print("ASIC Status: ", map['chain_acs8'])
+    print("=======================================================================================")
