@@ -36,13 +36,18 @@ class db:
         connection.commit()
         connection.close()
 
+    def delete_miner(ip):
+        connection = sqlite3.connect('miners.db')
+        cursor = connection.cursor()
+
+        cursor.execute('''DELETE FROM Miners WHERE IP = {ip} ''')
 #
 #       Miner Connection Class
 #
 
 class minerRequest:
-    def __init__(self, password, ip):
-        self.account = "root"
+    def __init__(self, username, password, ip):
+        self.account = username
         self.password = password
         self.url = "http://" + ip
 
@@ -59,7 +64,7 @@ miners = db_connect.miners
 for x in miners:
     print(x)
 
-    miner = minerRequest(x[2], x[0])
+    miner = minerRequest(x[1], x[2], x[0])
     response = miner.get_miner_status()
     data = response.json()
 
