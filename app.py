@@ -4,9 +4,9 @@ import sqlite3
 from getpass import getpass
 # import tkinter
 
-#
-#       Database Connection Class
-#
+#####################################################################
+#                   Database Connection Class
+#####################################################################
 
 class db:
     
@@ -65,9 +65,10 @@ class db:
         except Exception as e:
             print("Error Deleting Miner in DB")
             print(e)
-#
-#       Miner Connection Class
-#
+
+############################################################
+#               Miner Connection Class
+############################################################
 
 class minerRequest:
     def __init__(self, username, password, ip):
